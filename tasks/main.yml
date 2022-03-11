@@ -1,0 +1,65 @@
+---
+- name: assert proper distribution
+  assert:
+    that:
+      - ansible_distribution in ['Ubuntu', 'Archlinux', 'Kali']
+    quiet: true
+
+- name: Include OS-specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
+
+- name: Include common variables
+  include_vars: "common.yml"
+
+- include_tasks: asserts.yml
+
+- include_tasks: "{{ ansible_distribution }}.yml"
+
+- name: Get ovpn.zip
+  get_url:
+    url: "{{ _nvpn_bundle_url }}"
+    dest: "/etc/openvpn/ovpn.zip"
+    mode: 0640
+
+- name: Extract ovpn configs
+  unarchive:
+    src: /etc/openvpn/ovpn.zip
+    dest: /etc/openvpn
+    remote_src: true
+    owner: root
+    group: root
+    mode: 0640
+
+- name: Copy base config as model
+  copy:
+    remote_src: true
+    src: "{{ _nvpn_srv_config }}"
+    dest: /etc/openvpn/client/nord.ovpn
+    owner: root
+    group: root
+    mode: 0640
+
+- name: Add login/password file ref
+  lineinfile:
+    path: /etc/openvpn/client/nord.ovpn
+    regexp: '^auth-user-pass'
+    line: 'auth-user-pass /etc/openvpn/client/nord.cred'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install login/password file
+  template:
+    src: nord.cred.j2
+    dest: /etc/openvpn/client/nord.cred
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy nord.sh
+  copy:
+    src: files/nordvpn.sh
+    dest: /usr/bin/nordvpn.sh
+    owner: root
+    group: root
+    mode: 0750

@@ -1,0 +1,6 @@
+---
+_nvpn_bundle_url: https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip
+_nvpn_srv_id: fr710
+_nvpn_srv_type: tcp
+_nvpn_srv_config_name: "{{ _nvpn_srv_id }}.nordvpn.com.{{ _nvpn_srv_type }}.ovpn"
+_nvpn_srv_config: "/etc/openvpn/ovpn_{{ _nvpn_srv_type }}/{{ _nvpn_srv_config_name }}"
